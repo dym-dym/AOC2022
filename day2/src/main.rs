@@ -19,7 +19,7 @@ fn score_of_game(opponent: RPSMove, myself: RPSMove) -> u32 {
         0 => RPSResults::Draw,
         1 => RPSResults::Loss,
         2 => RPSResults::Win,
-        x => panic!("Resultat impossible {x}",),
+        x => panic!("Impossible Result {x}",),
     };
 
     res as u32 + myself as u32
@@ -32,8 +32,37 @@ fn get_move(input: char) -> RPSMove {
         'C' => RPSMove::Scissors,
         'X' => RPSMove::Rock,
         'Y' => RPSMove::Paper,
-        'W' => RPSMove::Scissors,
-        x => panic!("Mouvement impossible {x}"),
+        'Z' => RPSMove::Scissors,
+        x => panic!("Impossible move {x}"),
+    }
+}
+
+fn get_move_strat2(opp: RPSMove, desired_outcome: RPSResults) -> RPSMove {
+    match opp {
+        RPSMove::Rock => match desired_outcome {
+            RPSResults::Win => RPSMove::Paper,
+            RPSResults::Loss => RPSMove::Scissors,
+            RPSResults::Draw => opp,
+        },
+        RPSMove::Paper => match desired_outcome {
+            RPSResults::Win => RPSMove::Scissors,
+            RPSResults::Loss => RPSMove::Rock,
+            RPSResults::Draw => opp,
+        },
+        RPSMove::Scissors => match desired_outcome {
+            RPSResults::Win => RPSMove::Rock,
+            RPSResults::Loss => RPSMove::Paper,
+            RPSResults::Draw => opp,
+        },
+    }
+}
+
+fn get_outcome_strat_2(input: char) -> RPSResults {
+    match input {
+        'X' => RPSResults::Loss,
+        'Y' => RPSResults::Draw,
+        'Z' => RPSResults::Win,
+        x => panic!("Unexpected outcome {x}"),
     }
 }
 
@@ -51,8 +80,18 @@ fn part1(input: &str) -> u32 {
         .sum()
 }
 
-fn part2(input: &str) -> i32 {
-    0
+fn part2(input: &str) -> u32 {
+    let contents = fs::read_to_string(input).unwrap();
+
+    contents
+        .lines()
+        .map(|line| {
+            let opp = get_move(line.chars().next().unwrap());
+            let outcome = line.chars().last().unwrap();
+
+            score_of_game(opp, get_move_strat2(opp, get_outcome_strat_2(outcome)))
+        })
+        .sum()
 }
 
 fn main() {
@@ -71,6 +110,6 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2("inputtest.txt"), 0);
+        assert_eq!(part2("inputtest.txt"), 12);
     }
 }

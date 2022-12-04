@@ -23,9 +23,12 @@ impl Range {
     }
 
     pub fn fully_contains(&self, pal: &Range) -> bool {
-        let res = self.beginning <= pal.beginning && self.end >= pal.end;
+        self.beginning <= pal.beginning && self.end >= pal.end
+    }
 
-        res
+    pub fn overlaps_with(&self, pal: &Range) -> bool {
+        (self.beginning <= pal.end && self.beginning >= pal.beginning)
+            || (self.end <= pal.end && self.end >= pal.beginning)
     }
 }
 
@@ -59,12 +62,9 @@ impl ElfPair {
 fn part1(input: &str) -> u32 {
     let contents = fs::read_to_string(input).unwrap();
 
-    let contents: Vec<&str> = contents.split("\n").collect();
+    let contents = contents.split("\n");
 
-    let contents: Vec<ElfPair> = contents
-        .into_iter()
-        .map(|line| ElfPair::parse(line))
-        .collect();
+    let contents: Vec<ElfPair> = contents.map(|line| ElfPair::parse(line)).collect();
 
     let res: u32 = contents
         .into_iter()
@@ -80,16 +80,43 @@ fn part1(input: &str) -> u32 {
     res - 1
 }
 
+fn part2(input: &str) -> u32 {
+    let contents = fs::read_to_string(input).unwrap();
+
+    let contents = contents.split("\n");
+
+    let contents: Vec<ElfPair> = contents.map(|line| ElfPair::parse(line)).collect();
+
+    let res: u32 = contents
+        .into_iter()
+        .filter(|pair| {
+            pair.first_elf.overlaps_with(&pair.second_elf)
+                || pair.second_elf.overlaps_with(&pair.first_elf)
+        })
+        .count()
+        .try_into()
+        .unwrap();
+
+    // Returning our result with the last empty value excluded
+    res - 1
+}
+
 fn main() {
     println!("{}", part1("input.txt"));
+    println!("{}", part2("input.txt"));
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::part1;
+    use crate::{part1, part2};
 
     #[test]
     fn test_part1() {
         assert_eq!(part1("inputtest.txt"), 2)
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(part2("inputtest.txt"), 4)
     }
 }

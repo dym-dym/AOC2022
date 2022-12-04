@@ -32,7 +32,7 @@ fn get_move(input: char) -> RPSMove {
         'C' => RPSMove::Scissors,
         'X' => RPSMove::Rock,
         'Y' => RPSMove::Paper,
-        'Z' => RPSMove::Scissors,
+        'W' => RPSMove::Scissors,
         x => panic!("Mouvement impossible {x}"),
     }
 }
